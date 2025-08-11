@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Timer Tes Kraepelin</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        text-align: center;
+        padding: 20px;
+        background-color: #f9fafb;
+        transition: background-color 0.3s ease;
+      }
+      h1 {
+        font-size: 1.8em;
+        margin-bottom: 20px;
+        color: #333;
+      }
+      .time {
+        font-size: 3em;
+        margin: 20px 0;
+        font-weight: bold;
+        color: #222;
+      }
+      label {
+        display: block;
+        margin: 10px auto;
+        font-size: 1em;
+        color: #444;
+      }
+      input {
+        padding: 8px;
+        font-size: 1em;
+        width: 100px;
+        text-align: center;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        margin-top: 5px;
+      }
+      button {
+        padding: 10px 20px;
+        font-size: 1em;
+        margin: 10px 5px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        color: white;
+        transition: background-color 0.2s ease;
+      }
+      .start {
+        background-color: #4caf50;
+      }
+      .start:hover {
+        background-color: #45a049;
+      }
+      .stop {
+        background-color: #d9534f;
+      }
+      .stop:hover {
+        background-color: #c9302c;
+      }
+      .highlight {
+        background-color: #e0f7e9 !important; /* hijau lembut */
+      }
+      #message {
+        font-size: 1.4em;
+        font-weight: bold;
+        color: #4caf50;
+        margin-top: 10px;
+      }
+      @media (max-width: 600px) {
+        h1 {
+          font-size: 1.4em;
+        }
+        .time {
+          font-size: 2.2em;
+        }
+        input,
+        button {
+          font-size: 1em;
+          width: auto;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Timer Tes Kraepelin</h1>
+    <label>
+      Total Durasi (menit):<br />
+      <input type="number" id="totalMinutes" value="15" min="1" />
+    </label>
+    <label>
+      Interval PINDAH! (detik):<br />
+      <input type="number" id="intervalSeconds" value="30" min="5" />
+    </label>
+
+    <div class="time" id="timerDisplay">00:00</div>
+    <div id="message"></div>
+
+    <button class="start" onclick="startTimer()">Mulai</button>
+    <button class="stop" onclick="stopTimer()">Stop</button>
+
+    <script>
+      let timer, interval;
+      let remaining = 0;
+
+      function startTimer() {
+        stopTimer(); // Reset dulu
+
+        let totalMinutes =
+          parseInt(document.getElementById("totalMinutes").value) || 15;
+        let intervalSeconds =
+          parseInt(document.getElementById("intervalSeconds").value) || 30;
+        remaining = totalMinutes * 60;
+
+        const display = document.getElementById("timerDisplay");
+        const message = document.getElementById("message");
+
+        const beep = new Audio(
+          "https://actions.google.com/sounds/v1/alarms/beep_short.ogg"
+        );
+
+        // Suara "tut" sekali di awal
+        beep.play();
+
+        display.textContent = formatTime(remaining);
+        message.textContent = "";
+
+        // Interval PINDAH!
+        interval = setInterval(() => {
+          if (remaining > 0) {
+            // Suara tut tiap pindah
+            beep.currentTime = 0;
+            beep.play();
+
+            // Highlight & pesan
+            document.body.classList.add("highlight");
+            message.textContent = "PINDAH!";
+            setTimeout(() => {
+              document.body.classList.remove("highlight");
+              message.textContent = "";
+            }, 800);
+          }
+        }, intervalSeconds * 1000);
+
+        // Timer utama
+        timer = setInterval(() => {
+          if (remaining <= 0) {
+            stopTimer();
+            display.textContent = "00:00";
+            message.textContent = "Selesai!";
+          } else {
+            remaining--;
+            display.textContent = formatTime(remaining);
+          }
+        }, 1000);
+      }
+
+      function stopTimer() {
+        clearInterval(timer);
+        clearInterval(interval);
+      }
+
+      function formatTime(sec) {
+        let min = String(Math.floor(sec / 60)).padStart(2, "0");
+        let s = String(sec % 60).padStart(2, "0");
+        return `${min}:${s}`;
+      }
+    </script>
+  </body>
+</html>
