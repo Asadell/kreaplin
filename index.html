@@ -39,9 +39,9 @@
         margin-top: 5px;
       }
       button {
-        padding: 10px 20px;
+        padding: 10px 15px;
         font-size: 1em;
-        margin: 10px 5px;
+        margin: 5px;
         border: none;
         border-radius: 8px;
         cursor: pointer;
@@ -54,14 +54,26 @@
       .start:hover {
         background-color: #45a049;
       }
-      .stop {
-        background-color: #d9534f;
+      .pause {
+        background-color: #ff9800;
       }
-      .stop:hover {
-        background-color: #c9302c;
+      .pause:hover {
+        background-color: #e68a00;
+      }
+      .reset {
+        background-color: #5bc0de;
+      }
+      .reset:hover {
+        background-color: #31b0d5;
+      }
+      .test {
+        background-color: #9c27b0;
+      }
+      .test:hover {
+        background-color: #7b1fa2;
       }
       .highlight {
-        background-color: #e0f7e9 !important; /* hijau lembut */
+        background-color: #e0f7e9 !important;
       }
       #message {
         font-size: 1.4em;
@@ -86,28 +98,33 @@
   </head>
   <body>
     <h1>Timer Tes Kraepelin</h1>
-    <label>
-      Total Durasi (menit):<br />
+    <label
+      >Total Durasi (menit):<br />
       <input type="number" id="totalMinutes" value="15" min="1" />
     </label>
-    <label>
-      Interval PINDAH! (detik):<br />
+    <label
+      >Interval PINDAH! (detik):<br />
       <input type="number" id="intervalSeconds" value="30" min="5" />
     </label>
 
     <div class="time" id="timerDisplay">00:00</div>
     <div id="message"></div>
 
-    <button class="start" onclick="startTimer()">Mulai</button>
-    <button class="stop" onclick="stopTimer()">Stop</button>
+    <button class="start" id="btnStart" onclick="startTimer()">Mulai</button>
+    <button class="pause" onclick="pauseResumeTimer()">Pause</button>
+    <button class="reset" onclick="resetTimer()">Reset</button>
+    <button class="test" id="btnTest" onclick="testSound()">Uji Suara</button>
 
     <script>
       let timer, interval;
       let remaining = 0;
+      let paused = false;
+      let beep = new Audio(
+        "https://actions.google.com/sounds/v1/alarms/beep_short.ogg"
+      );
 
       function startTimer() {
-        stopTimer(); // Reset dulu
-
+        stopAll(); // reset dulu
         let totalMinutes =
           parseInt(document.getElementById("totalMinutes").value) || 15;
         let intervalSeconds =
@@ -117,9 +134,9 @@
         const display = document.getElementById("timerDisplay");
         const message = document.getElementById("message");
 
-        const beep = new Audio(
-          "https://actions.google.com/sounds/v1/alarms/beep_short.ogg"
-        );
+        // Hide start & test button
+        document.getElementById("btnStart").style.display = "none";
+        document.getElementById("btnTest").style.display = "none";
 
         // Suara "tut" sekali di awal
         beep.play();
@@ -130,11 +147,8 @@
         // Interval PINDAH!
         interval = setInterval(() => {
           if (remaining > 0) {
-            // Suara tut tiap pindah
             beep.currentTime = 0;
             beep.play();
-
-            // Highlight & pesan
             document.body.classList.add("highlight");
             message.textContent = "PINDAH!";
             setTimeout(() => {
@@ -146,20 +160,46 @@
 
         // Timer utama
         timer = setInterval(() => {
-          if (remaining <= 0) {
-            stopTimer();
-            display.textContent = "00:00";
-            message.textContent = "Selesai!";
-          } else {
-            remaining--;
-            display.textContent = formatTime(remaining);
+          if (!paused) {
+            if (remaining <= 0) {
+              stopAll();
+              display.textContent = "00:00";
+              message.textContent = "Selesai!";
+            } else {
+              remaining--;
+              display.textContent = formatTime(remaining);
+            }
           }
         }, 1000);
       }
 
-      function stopTimer() {
+      function pauseResumeTimer() {
+        paused = !paused;
+        document.querySelector(".pause").textContent = paused
+          ? "Lanjut"
+          : "Pause";
+      }
+
+      function stopAll() {
         clearInterval(timer);
         clearInterval(interval);
+        paused = false;
+        document.querySelector(".pause").textContent = "Pause";
+      }
+
+      function resetTimer() {
+        stopAll();
+        document.getElementById("timerDisplay").textContent = "00:00";
+        document.getElementById("message").textContent = "";
+
+        // Show start & test button again
+        document.getElementById("btnStart").style.display = "inline-block";
+        document.getElementById("btnTest").style.display = "inline-block";
+      }
+
+      function testSound() {
+        beep.currentTime = 0;
+        beep.play();
       }
 
       function formatTime(sec) {
